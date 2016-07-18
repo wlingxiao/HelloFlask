@@ -1,10 +1,23 @@
-<!DOCTYPE html>
+{% extends "bootstrap/base.html"%}
+{% import "bootstrap/wtf.html" as wtf %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
+    {% block meta %}
+        <meta charset="UTF-8">
+    {% endblock %}
+    <title>{% block title %}HelloFlask - Login{% endblock %}</title>
 </head>
 <body>
-
+    {% block body %}
+    {{ super() }}
+    {% block page_content %}
+    <div class="page-header">
+        <h1>登录</h1>
+    </div>
+    <div class="col-md-4">
+        {{ wtf.quick_form(form) }}
+    </div>
+    {% endblock %}
+{% endblock %}
 </body>
 </html>

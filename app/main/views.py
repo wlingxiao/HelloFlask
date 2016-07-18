@@ -1,4 +1,5 @@
-from . import blueprint
+# -*- coding: utf-8 -*-
+from . import main
 from flask import render_template, session, url_for, redirect
 from flask_wtf import Form
 from wtforms import StringField, SubmitField
@@ -10,7 +11,7 @@ class NameForm(Form):
     submit = SubmitField('Submit')
 
 
-@blueprint.route('/', methods=['GET', 'POST'])
+@main.route('/', methods=['GET', 'POST'])
 def index():
     form = NameForm()
     if form.validate_on_submit():
