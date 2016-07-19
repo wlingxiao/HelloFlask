@@ -3,7 +3,7 @@ from flask import render_template, redirect, url_for, request, flash
 from . import auth
 from forms import LoginForm, RegistrationForm
 from ..models import User
-from flask_login import login_user,login_required, logout_user
+from flask_login import login_user,login_required, logout_user, current_user
 from .. import db
 
 
@@ -40,3 +40,11 @@ def register():
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', form=form)
 
+
+# 更新已登录用户的最后访问时间
+@auth.before_app_request
+def before_request():
+    if current_user.is_authenitcated:
+        current_user.ping()
+        if not current_user.confirmed and request.endpoint[:5] != 'auth.':
+            return redirect(url_for('auth.unconfirmed'))  # Todo
