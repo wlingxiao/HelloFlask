@@ -10,10 +10,10 @@ login_manager.login_view = 'auth.login'
 
 bootstrap = Bootstrap()
 
+app = Flask(__name__)
+
 
 def create_app(config):
-    app = Flask(__name__)
-
     app.config['SECRET_KEY'] = config['SECRET_KEY']
     app.config['SQLALCHEMY_DATABASE_URI'] = config['SQLALCHEMY_DATABASE_URI']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config['SQLALCHEMY_TRACK_MODIFICATIONS']
@@ -29,6 +29,7 @@ def create_app(config):
 
     # 初始化数据库
     db.init_app(app)
-
+    db.app = app
+    db.create_all()
 
     return app

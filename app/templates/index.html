@@ -5,10 +5,11 @@
     <title>Title</title>
 </head>
 <body>
-    <form method="post">
-        {{ form.hidden_tag() }}
-        {{ form.name.label }} {{ name }}{{ form.name }}
-        {{ form.submit() }}
-    </form>
+    Hello,
+    {% if current_user.is_authenticated %}
+        {{ current_user.username }}
+    {% else %}
+        Stranger
+    {% endif %}
 </body>
 </html>
