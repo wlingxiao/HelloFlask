@@ -1,15 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    Hello,
-    {% if current_user.is_authenticated %}
-        {{ current_user.username }}
-    {% else %}
-        Stranger
+{% import "bootstrap/wtf.html" as wtf %}
+<div>
+    {% if current_user.can(Permission.WRITE_ARTICLES) %}
+    {{ wtf.quick_form(form) }}
     {% endif %}
-</body>
-</html>
+</div>
+<ul class="posts">
+    {% for post in posts %}
+        <li class="post">
+            <div class="profile-thumbnail">
+                <a href="{{ url_for('.user', username=post.author.username) }}">
+                    <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+                </a>
+            </div>
+            <div class="post-date"></div>
+            <div class="post-author">
+                <a href="{{ url_for('.user', username=post.author.username) }}">{{ post.author.username }}</a>
+            </div>
+            <div class="post-body">{{ post.body }}</div>
+        </li>
+    {% endfor %}
+</ul>

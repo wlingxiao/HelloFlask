@@ -9,3 +9,7 @@ class EditProfileForm(Form):
     location = StringField(u'位置信息', validators=[Length(0, 64)])
     about_me = TextAreaField(u'关于我')
     submit = SubmitField(u'确认')
+
+class PostForm(Form):
+    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    submit = SubmitField('Submit')
