@@ -4,6 +4,8 @@ from . import db
 from flask_login import UserMixin, AnonymousUserMixin, current_app
 from . import login_manager
 from datetime import datetime
+from . import login_manager
+
 
 
 @login_manager.user_loader
@@ -64,7 +66,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     # 用户密码的 hash 值
     password_hash = db.Column(db.String(128))
+    # 用户角色 id
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    # 用户是否验证邮件
+    confirmed = db.Column(db.Boolean, default=False)
 
     # 扩充用户资料信息
     # 真实姓名
@@ -124,7 +129,7 @@ class User(UserMixin, db.Model):
             u = User(email=forgery_py.internet.email_address(),
                      username=forgery_py.internet.user_name(),
                      password=forgery_py.lorem_ipsum.word(),
-                     # confirmed=True,
+                     confirmed=True,
                      name=forgery_py.name.full_name(),
                      location=forgery_py.address.city(),
                      about_me=forgery_py.lorem_ipsum.sentence(),
@@ -162,9 +167,12 @@ class Post(db.Model):
             db.session.add(p)
             db.session.commit()
 
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
 
     def is_administrator(self):
         return False
+
+login_manager.anonymous_user = AnonymousUser

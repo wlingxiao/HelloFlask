@@ -5,7 +5,7 @@ from flask_script import Manager, Shell
 from flask_migrate import Migrate, MigrateCommand
 import config
 
-app = create_app(config=config.Config)
+app = create_app(config=config.config)
 manager = Manager(app)
 migrate = Migrate(app, db)
 
@@ -17,4 +17,6 @@ manager.add_command('db', MigrateCommand)
 
 if __name__ == '__main__':
     # 程序入口
-    manager.run()
+    app.run(debug=True)
+
+    # manager.run()
