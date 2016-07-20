@@ -88,7 +88,6 @@ class User(UserMixin, db.Model):
     # 定义默认的用户角色
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
-        current_app.config['HelloFlask_Admin'] = ''
         if self.role is None:
             if self.email == current_app.config['HelloFlask_Admin']:
                 self.role = Role.query.filter_by(Permission=0xff).first()

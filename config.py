@@ -8,11 +8,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 #     'SQLALCHEMY_COMMIT_ON_TEARDOWN':True,
 #     'SQLALCHEMY_TRACK_MODIFICATIONS':True
 # }
+
+
 class Config:
-    SECRET_KEY='some string'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db'),
+    SECRET_KEY = 'some string'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'data.db')
     SQLALCHEMY_COMMIT_ON_TEARDOWN = True
     SQLALCHEMY_TRACK_MODIFICATIONS = True
+    HelloFlask_POSTS_PER_PAGE = 10
+    HelloFlask_Admin = 'admin@helloflask.com'
 
     @staticmethod
     def init_app(app):
@@ -24,6 +28,6 @@ class DevelopmentConfig(Config):
 
 
 config = {
-    'default':DevelopmentConfig,
-    'development':DevelopmentConfig
+    'default': DevelopmentConfig,
+    'development': DevelopmentConfig
 }

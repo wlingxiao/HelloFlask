@@ -18,7 +18,7 @@ def index():
         return redirect(url_for('.index'))
     # 分页显示博客文章列表
     page = request.args.get('page', 1, type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).pagination(
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['HelloFlask_POSTS_PER_PAGE'],
         error_out=False)
     posts = pagination.items
