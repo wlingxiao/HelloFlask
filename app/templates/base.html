@@ -1,18 +1,22 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
+<html>
+    <head>
     {% block head %}
-    <meta charset="UTF-8">
-    <title>{% block title %}{% endblock %}</title>
-    {% endblock %}
-</head>
-<body>
+        <meta charset="UTF-8">
+        <title>{% block title %}{% endblock title %}</title>
+        {%- block styles %}
+            <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.min.css">
+        {%- endblock styles %}
+    {% endblock head %}
+    </head>
+    <body>
     {% block body %}
-    <ul class="nav navbar-nav navbar-right">
+    {% block nav_header %}
+        <ul class="nav navbar-nav navbar-right">
         {% if current_user.is_authenticated %}
-            <li><a href="{{ url_for('auth.logout') }}">Sign Out</a></li>
+            <li><a href="{{ url_for('auth.logout') }}">注销</a></li>
         {% else %}
-            <li><a href="{{ url_for('auth.login') }}">Sign In</a></li>
+            <li><a href="{{ url_for('auth.login') }}">登录</a></li>
         {%  endif %}
         {% if current_user.is_authenticated %}
             <li>
@@ -20,6 +24,15 @@
             </li>
         {% endif %}
     </ul>
-    {% endblock %}
-</body>
+    {% endblock nav_header %}
+    {% block container %}
+    {% endblock container %}
+    {% block scripts %}
+        <!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+        <script src="http://apps.bdimg.com/libs/jquery/1.11.3/jquery.min.js"></script>
+        <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+        <script src="http://apps.bdimg.com/libs/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    {% endblock scripts %}
+    {% endblock body %}
+    </body>
 </html>

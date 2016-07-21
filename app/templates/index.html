@@ -1,4 +1,9 @@
+{% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Index{% endblock %}
+
+{%- block container -%}
 <div>
     {% if current_user.can(Permission.WRITE_ARTICLES) %}
     {{ wtf.quick_form(form) }}
@@ -9,7 +14,7 @@
         <li class="post">
             <div class="profile-thumbnail">
                 <a href="{{ url_for('.user', username=post.author.username) }}">
-                    <img class="img-rounded profile-thumbnail" src="{{ post.author.gravatar(size=40) }}">
+                    {#<img class="img-rounded profile-thumbnail" src="{{ post.author }}">#}
                 </a>
             </div>
             <div class="post-date"></div>
@@ -20,3 +25,4 @@
         </li>
     {% endfor %}
 </ul>
+{%- endblock container -%}

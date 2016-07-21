@@ -27,6 +27,7 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+# 注册
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegistrationForm()
@@ -41,10 +42,18 @@ def register():
     return render_template('auth/register.html', form=form)
 
 
+# 未确认邮件账户
+@auth.route('/unconfirmed')
+def unconfirmed():
+    if current_user.is_anonymous() or current_user.confirmed:
+        return redirect(url_for('main.index'))
+    return render_template('auth.unconfirmed.html')
+
+
 # 更新已登录用户的最后访问时间
 @auth.before_app_request
 def before_request():
     if current_user.is_authenticated:
         current_user.ping()
         if not current_user.confirmed and request.endpoint[:5] != 'auth.':
-            return redirect(url_for('auth.unconfirmed'))  # Todo
+            return redirect(url_for('auth.unconfirmed'))
