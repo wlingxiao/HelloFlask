@@ -2,10 +2,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import UserMixin, AnonymousUserMixin, current_app
-from . import login_manager
 from datetime import datetime
 from . import login_manager
-
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
 @login_manager.user_loader
@@ -89,6 +88,7 @@ class User(UserMixin, db.Model):
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
         if self.role is None:
+            current_app.config['HelloFlask_Admin'] = ''
             if self.email == current_app.config['HelloFlask_Admin']:
                 self.role = Role.query.filter_by(Permission=0xff).first()
             if self.role is None:
@@ -139,6 +139,20 @@ class User(UserMixin, db.Model):
             except IntegrityError:
                 db.session.rollback()
 
+    # 生成验证令牌
+    def generate_auth_token(self, expiration):
+        s = Serializer(current_app.config['SECRET_KEY'],
+                       expires_in=expiration)
+        return s.dumps({'id':self.id})
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.load(token)
+        except:
+            return None
+        return User.query.get(data['id'])
 
 # 博客文章
 class Post(db.Model):

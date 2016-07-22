@@ -14,16 +14,15 @@ app = Flask(__name__)
 
 
 def create_app(config):
-    # app.config['SECRET_KEY'] = config['SECRET_KEY']
-    # app.config['SQLALCHEMY_DATABASE_URI'] = config['SQLALCHEMY_DATABASE_URI']
-    # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config['SQLALCHEMY_TRACK_MODIFICATIONS']
     app.config.from_object(config['default'])
     config['default'].init_app(app)
     from app.main import main as main_blueprint
     app.register_blueprint(main_blueprint)
     from app.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
-
+    # 注册 rest_api blueprint
+    from api_1_0 import api as api_1_0_blueprint
+    app.register_blueprint(api_1_0_blueprint)
     # 初始化Bootstrap
     bootstrap.init_app(app)
     # 认证用户

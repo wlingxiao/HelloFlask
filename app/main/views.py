@@ -18,6 +18,7 @@ def index():
         return redirect(url_for('.index'))
     # 分页显示博客文章列表
     page = request.args.get('page', 1, type=int)
+    current_app.config['HelloFlask_POSTS_PER_PAGE'] = 10
     pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
         page, per_page=current_app.config['HelloFlask_POSTS_PER_PAGE'],
         error_out=False)
