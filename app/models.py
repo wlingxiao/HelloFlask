@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from exceptions import ValidationError
+from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
 from flask_login import UserMixin, AnonymousUserMixin, current_app
@@ -53,6 +55,16 @@ class Role(db.Model):
         db.session.commit()
 
 
+# 关注着
+class Follow(db.Model):
+    __tablename='follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
@@ -83,6 +95,32 @@ class User(UserMixin, db.Model):
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     # 博客文章
     posts = db.relationship('Post', backref='author', lazy='dynamic')
+
+    # 关注者
+    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic',
+                               cascade='all, delete-orphan')
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic',
+                                cascade='all, delete-orphan')
+
+    # 关注关系的辅助方法
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    def unfollow(self, user):
+        f = Follow(follower=self, followed=user)
+        db.session.add(f)
+
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    def is_followed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id).first() is not None
 
     # 定义默认的用户角色
     def __init__(self, **kwargs):
@@ -117,6 +155,20 @@ class User(UserMixin, db.Model):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
+    # 序列化为json
+    def to_json(self):
+        json_user = {
+            'url':url_for('api.get_post', id=self.id, _external=True),
+            'username':self.username,
+            'member_since':self.member_since,
+            'last_seen':self.last_seen,
+            'posts':url_for('api.get_user_followed_posts',
+                            id=self.id, _external=True),
+            'post_count':self.posts.count()
+        }
+        return json_user
+
+    # 生成测试数据
     @staticmethod
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
@@ -139,12 +191,13 @@ class User(UserMixin, db.Model):
             except IntegrityError:
                 db.session.rollback()
 
-    # 生成验证令牌
+    # 生成 RESTFUL Http 验证令牌
     def generate_auth_token(self, expiration):
         s = Serializer(current_app.config['SECRET_KEY'],
                        expires_in=expiration)
         return s.dumps({'id':self.id})
 
+    # 验证 RESTFUL Http 令牌
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -153,6 +206,7 @@ class User(UserMixin, db.Model):
         except:
             return None
         return User.query.get(data['id'])
+
 
 # 博客文章
 class Post(db.Model):
@@ -165,6 +219,19 @@ class Post(db.Model):
     # 博客作者
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+    # 序列化为 json
+    def to_json(self):
+        json_post = {
+            'url':url_for('api.get_post', id=self.id, _external=True),
+            'body':self.body,
+            'body_html':self.body_html,
+            'timestamp':self.timestamp,
+            'author':url_for('api.get_user', id=self.id, _external=True),
+            'comment_count':self.comments.count()
+        }
+        return json_post
+
+    # 生成测试文章
     @staticmethod
     def generate_fake(count=100):
         from random import seed, randint
@@ -179,6 +246,14 @@ class Post(db.Model):
                      author=u)
             db.session.add(p)
             db.session.commit()
+
+    # 从json反序列化为对象
+    @staticmethod
+    def from_json(json_post):
+        body = json_post.get('body')
+        if body is None or body == '':
+            raise ValidationError('post does not have a body')
+        return Post(body=body)
 
 
 class AnonymousUser(AnonymousUserMixin):

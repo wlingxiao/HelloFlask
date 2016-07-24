@@ -1,39 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from flask import g, jsonify, make_response
+from flask import g, jsonify
 from ..models import AnonymousUser, User
 from flask_httpauth import HTTPBasicAuth
-from flask_login import user_unauthorized
-from errors import forbidden
+from errors import forbidden, unauthorized
 from . import api
 http_auth = HTTPBasicAuth()
 
 
-@http_auth.verify_password
-def verify_password(email, password):
-    if email == '':
-        g.current_user = AnonymousUser()
-        return True
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return False
-    g.current_user = User
-    return user.verify_password(password=password)
-
 @http_auth.error_handler
 def http_auth_error():
-    return user_unauthorized('Invalid credentials')
-
-@api.route('/posts')
-@http_auth.login_required
-def get_post():
-    pass
+    return unauthorized('Invalid credentials')
 
 
 @api.before_app_request
 @http_auth.login_required
 def before_request():
-    if not g.current_user.is_annymous and not g.current_user.confirmed:
+    if not g.current_user.is_anonymous and not g.current_user.confirmed:
         return forbidden('Unconfirmed')
 
 
@@ -54,9 +37,9 @@ def verify_password(email_or_taken, password):
     return user.verify_password(password=password)
 
 
+# 生成 RESTFUL 验证令牌的路由
 @api.route('/token')
-@before_request
 def get_token():
-    if g.current_user.is_annymous() or g.token_used:
-        return user_unauthorized('Invalid credentials')
+    if g.current_user.is_anonymous or g.token_used:
+        return unauthorized('Invalid credentials')
     return jsonify({'token':g.current_user.generate_auth_token(expiration=3600), 'expiration':3600})
