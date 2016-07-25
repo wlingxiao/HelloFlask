@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
-from flask_login import LoginManager,current_app
+from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_pagedown import PageDown
 db = SQLAlchemy()
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'
 
 bootstrap = Bootstrap()
-
+#
+pagedown = PageDown()
 app = Flask(__name__)
 
 
@@ -25,8 +27,12 @@ def create_app(config):
     app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
     # 初始化Bootstrap
     bootstrap.init_app(app)
+
     # 认证用户
     login_manager.init_app(app)
+
+    # 富文本文件
+    pagedown.init_app(app)
 
     # 初始化数据库
     db.init_app(app)

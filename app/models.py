@@ -6,6 +6,9 @@ from . import db
 from flask_login import UserMixin, AnonymousUserMixin, current_app
 from datetime import datetime
 from . import login_manager
+from flask import current_app
+from markdown import markdown
+import bleach
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
@@ -214,6 +217,8 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     # 博客正文
     body = db.Column(db.Text)
+    # 渲染为HTML的正文
+    body_html = db.Column(db.Text)
     # 博客发布日期
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     # 博客作者
@@ -247,6 +252,16 @@ class Post(db.Model):
             db.session.add(p)
             db.session.commit()
 
+    # 正文改变时转换为html
+    @staticmethod
+    def on_changed_body(target, value, old_value, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'blcokquote', 'code',
+                        'em', 'i', 'li', 'ol', 'pre', 'strong', 'ul',
+                        'h1', 'h2', 'h3', 'p']
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value, output_format='html'),
+            tags=allowed_tags, strip=True))
+
     # 从json反序列化为对象
     @staticmethod
     def from_json(json_post):
@@ -264,3 +279,4 @@ class AnonymousUser(AnonymousUserMixin):
         return False
 
 login_manager.anonymous_user = AnonymousUser
+db.event.listen(Post.body, 'set', Post.on_changed_body)

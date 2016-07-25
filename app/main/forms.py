@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from flask_wtf import Form
-from wtforms import StringField, PasswordField, BooleanField, SubmitField,ValidationError, TextAreaField
-from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
+from wtforms import StringField, BooleanField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, Length, Email, Regexp
+from flask_pagedown.fields import  PageDownField
 
 
 # 管理员级别资料编辑表单
@@ -20,7 +21,7 @@ class EditProfileForm(Form):
     submit = SubmitField(u'确认')
 
 
-#
+# 文章表单
 class PostForm(Form):
-    body = TextAreaField("What's on your mind?", validators=[DataRequired()])
+    body = PageDownField("What's on your mind?", validators=[DataRequired()])
     submit = SubmitField('Submit')

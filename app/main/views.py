@@ -61,6 +61,12 @@ def edit_profile():
     return render_template('edit_profile.html', form=form)
 
 
+@main.route('/post/<int:_id>')
+def post(_id):
+    _post = Post.query.get_or_404(_id)
+    return render_template('post.html', posts=[_post])
+
+
 # “关注”路由
 @main.route('/follow/<username>')
 @login_required
