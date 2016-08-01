@@ -45,9 +45,9 @@ def register():
 # 未确认邮件账户
 @auth.route('/unconfirmed')
 def unconfirmed():
-    if current_user.is_anonymous() or current_user.confirmed:
+    if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('auth.unconfirmed.html')
+    return render_template('auth/unconfirmed.html')
 
 
 # 更新已登录用户的最后访问时间

@@ -2,10 +2,10 @@
 from flask import render_template, url_for, redirect, abort, flash, request, make_response
 from flask_login import login_required, current_user, current_app
 
-from forms import EditProfileForm, PostForm
+from forms import EditProfileForm, PostForm, CommentForm
 from . import main
 from .. import db
-from ..models import User, Permission, Post
+from ..models import User, Permission, Post, Comment
 
 
 @main.route('/', methods=['GET', 'POST'])
@@ -61,10 +61,27 @@ def edit_profile():
     return render_template('edit_profile.html', form=form)
 
 
-@main.route('/post/<int:_id>')
+# 博客文章评论路由
+@main.route('/post/<_id>', methods=['GET', 'POST'])
 def post(_id):
-    _post = Post.query.get_or_404(_id)
-    return render_template('post.html', posts=[_post])
+    post = Post.query.get_or_404(_id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=post,
+                          author=current_user._get_current_object())
+        db.session.add(comment)
+        flash('Your comment has been published')
+        return redirect(url_for('.post', id=post.id, page=-1))
+    page = request.args.get('page', 1, type=int)
+    if page == -1:
+        page = (Post.comments.count - 1) / current_app.config['HelloFlask_COMMENT_PER_PAGE'] + 1
+    pagination = Post.comments.order_by(Comment.timestamp.asc())\
+        .pagination(page,
+                    per_page=current_app.config['HelloFlask_COMMENTS_PER_PAGE'],
+                    error_out=False)
+    comments = pagination.items
+    return render_template('post.html', posts=[post], form=form, comments=comments, pagination=pagination)
 
 
 # “关注”路由
@@ -116,3 +133,25 @@ def show_followed():
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
     return resp
+
+
+
+# 评论管理路由
+@main.route('/moderate/enable/<_id>')
+@login_required
+def moderate_enable(_id):
+    comment = Comment.query.get_or_404(_id)
+    comment.disable = False
+    db.session.add(comment)
+    return redirect(url_for('.moderate',
+                            page=request.args.get('page', 1, type=int)))
+
+
+@main.route('/moderate/disable/<_id>')
+@login_required
+def moderate_disable(_id):
+    comment = Comment.query_or_404(_id)
+    comment.disable = True
+    db.session.add(comment)
+    return redirect(url_for('.moderate',
+                            page=request.args.get('page', 1, type=int)))

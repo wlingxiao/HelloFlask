@@ -108,6 +108,8 @@ class User(UserMixin, db.Model):
                                 backref=db.backref('followed', lazy='joined'),
                                 lazy='dynamic',
                                 cascade='all, delete-orphan')
+    # 评论
+    comments = db.relationship('Comment', backref='author', lazy='dynamic')
 
     # 关注关系的辅助方法
     def follow(self, user):
@@ -223,16 +225,18 @@ class Post(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     # 博客作者
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    # 评论
+    comments = db.relationship('Comment', backref='post', lazy='dynamic')
 
     # 序列化为 json
     def to_json(self):
         json_post = {
-            'url':url_for('api.get_post', id=self.id, _external=True),
-            'body':self.body,
-            'body_html':self.body_html,
-            'timestamp':self.timestamp,
-            'author':url_for('api.get_user', id=self.id, _external=True),
-            'comment_count':self.comments.count()
+            'url': url_for('api.get_post', id=self.id, _external=True),
+            'body': self.body,
+            'body_html': self.body_html,
+            'timestamp': self.timestamp,
+            'author': url_for('api.get_user', id=self.id, _external=True),
+            'comment_count': self.comments.count()
         }
         return json_post
 
@@ -271,6 +275,24 @@ class Post(db.Model):
         return Post(body=body)
 
 
+# 评论
+class Comment(db.Model):
+    __tablename__ = 'comments'
+    id = db.Column(db.INT, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.Boolean)
+    author_id = db.Column(db.INT, db.ForeignKey('users.id'))
+    post_id = db.Column(db.INT, db.ForeignKey('posts.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, old_value, initiator):
+        allowed_tags = ['a', 'abbr', 'acronym', 'b', 'code', 'em', 'strong']
+        target.body_html = bleach.linkify(bleach.clean(markdown(value, output_format='html'),
+                                                       tags=allowed_tags,
+                                                       strip=True))
+
+
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
@@ -280,3 +302,4 @@ class AnonymousUser(AnonymousUserMixin):
 
 login_manager.anonymous_user = AnonymousUser
 db.event.listen(Post.body, 'set', Post.on_changed_body)
+db.event.listen(Comment.body, 'set', Comment.on_changed_body)
