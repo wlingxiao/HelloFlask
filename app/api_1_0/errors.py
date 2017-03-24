@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ..exceptions import ValidationError
+from app.exceptions import ValidationError
 from . import api
 from flask import make_response, jsonify
 

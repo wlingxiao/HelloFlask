@@ -23,7 +23,7 @@ def create_app(config):
     from app.auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
     # 注册 rest_api blueprint
-    from api_1_0 import api as api_1_0_blueprint
+    from .api_1_0 import api as api_1_0_blueprint
     app.register_blueprint(api_1_0_blueprint, url_prefix='/api/v1.0')
     # 初始化Bootstrap
     bootstrap.init_app(app)

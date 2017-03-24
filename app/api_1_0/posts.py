@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from errors import forbidden
-from ..models import Permission
-from .. import db
+from .errors import forbidden
+from app.models import Permission
+from app import db
 from flask import jsonify, request, g, url_for, current_app
-from ..models import Post
+from app.models import Post
 from . import api
-from authentication import http_auth
-from decorators import permission_required
+from .authentication import http_auth
+from .decorators import permission_required
 
 
 # 文章资源 GET 请求

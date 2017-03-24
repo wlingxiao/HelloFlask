@@ -3,7 +3,7 @@ from exceptions import ValidationError
 from flask import url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
-from flask_login import UserMixin, AnonymousUserMixin, current_app
+from flask_login import UserMixin, AnonymousUserMixin
 from datetime import datetime
 from . import login_manager
 from flask import current_app

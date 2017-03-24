@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from flask import render_template, url_for, redirect, abort, flash, request, make_response
-from flask_login import login_required, current_user, current_app
+from flask import render_template, url_for, redirect, abort, flash, request, make_response, current_app
+from flask_login import login_required, current_user
 
-from forms import EditProfileForm, PostForm, CommentForm
+from .forms import EditProfileForm, PostForm, CommentForm
 from . import main
 from .. import db
-from ..models import User, Permission, Post, Comment
+from app.models import User, Permission, Post, Comment
 
 
 @main.route('/', methods=['GET', 'POST'])

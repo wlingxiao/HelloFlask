@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from errors import forbidden
+from .errors import forbidden
 from flask import g
 from functools import wraps
 
